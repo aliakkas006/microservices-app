@@ -1,0 +1,30 @@
+# Binaries
+backend-go
+*.exe
+*.out
+
+# Build cache
+bin/
+pkg/
+
+# Dependencies (will be handled by go mod download)
+vendor/
+
+# Local env files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git files
+.git
+.gitignore
+
+# Logs
+*.log
+
+# Editor/project configs
+.vscode
+.idea

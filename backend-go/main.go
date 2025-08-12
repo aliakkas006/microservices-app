@@ -1,0 +1,46 @@
+package main
+
+import (
+	"log"
+	"os"
+
+	"github.com/aliakkas006/backend-go/db"
+	"github.com/aliakkas006/backend-go/routes"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+)
+
+func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Warning: No .env file found")
+	}
+
+	err = db.Connect()
+	if err != nil {
+		log.Fatalf("Unable to connect to DB: %v", err)
+	}
+	defer db.Close()
+
+	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		AllowCredentials: true,
+	}))
+
+	routes.RegisterTodoRoutes(r)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+
+	log.Printf("Starting Go backend on port %s...", port)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatalf("Failed to run server: %v", err)
+	}
+}

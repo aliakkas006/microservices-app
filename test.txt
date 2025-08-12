@@ -1,0 +1,5 @@
+        1. sudo -u <username> psql
+        2. CREATE USER <admin> WITH PASSWORD <'password'>;
+           ALTER USER <admin> WITH SUPERUSER;  -- Optional
+
+        3. psql -U <username> -d <database_name> -h <localhost>

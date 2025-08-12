@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - '5433:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - full-stack-app-net
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER}']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Golang backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: golang-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+    ports:
+      - '8080:8080'
+    networks:
+      - full-stack-app-net
+
+  # Next.js frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nextjs-frontend
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    ports:
+      - '3000:3000'
+    networks:
+      - full-stack-app-net
+
+volumes:
+  pg_data:
+
+networks:
+  full-stack-app-net:
+    driver: bridge

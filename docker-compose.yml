@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+  # PostgreSQL database service -------
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  # Node backend service -------
+  node-backend:
+    build:
+      context: ./backend-node
+      dockerfile: Dockerfile
+    container_name: node-backend
+    environment:
+      PORT: 5000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: password
+      DB_NAME: postgres
+    ports:
+      - '5001:5000'
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
+  # Go backend service -------
+  go-backend:
+    build:
+      context: ./backend-go
+      dockerfile: Dockerfile
+    container_name: go-backend
+    environment:
+      PORT: 8000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: password
+      DB_NAME: postgres
+    ports:
+      - '8000:8000'
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
+  # React frontend service -------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: react-frontend
+    environment:
+      REACT_APP_NODE_API_BASE: http://localhost:5001/api
+      REACT_APP_GO_API_BASE: http://localhost:8000/api
+    ports:
+      - '3000:3000'
+    depends_on:
+      - node-backend
+      - go-backend
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge
