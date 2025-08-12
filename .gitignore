@@ -16,10 +16,6 @@
 
 # React frontend
 /frontend/node_modules
-/frontend/build
-/frontend/.env
-/frontend/npm-debug.log
-/frontend/yarn-error.log
 
 # Docker
 docker-compose.override.yml
