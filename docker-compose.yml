@@ -1,6 +1,136 @@
 version: '3.9'
 
 services:
+  # Kafka broker - 1 -------------
+  kafka-1:
+    image: bitnami/kafka:3.7
+    container_name: kafka-1
+    restart: unless-stopped
+    environment:
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,INTERNAL://:19092,CONTROLLER://:19093
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,INTERNAL://kafka-1:19092
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:19093,2@kafka-2:19093
+      KAFKA_CFG_LOG_DIRS: /bitnami/kafka/data
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_CFG_NUM_PARTITIONS: 3
+      KAFKA_CFG_MIN_INSYNC_REPLICAS: 2
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_CFG_CLUSTER_ID: 'kafka-cluster-123'
+      KAFKA_KRAFT_CLUSTER_ID: 'kafka-cluster-123'
+      KAFKA_CFG_INITIAL_BROKER_REGISTRATION_TIMEOUT_MS: '60000'
+    ports:
+      - '9092:9092'
+      - '19092:19092'
+    volumes:
+      - kafka1_data:/bitnami/kafka
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'kafka-broker-api-versions.sh',
+          '--bootstrap-server',
+          'localhost:9092',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app_network
+
+  # Kafka broker - 2 -------------
+  kafka-2:
+    image: bitnami/kafka:3.7
+    container_name: kafka-2
+    restart: unless-stopped
+    environment:
+      KAFKA_CFG_NODE_ID: 2
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,INTERNAL://:19092,CONTROLLER://:19093
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,INTERNAL://kafka-2:19092
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:19093,2@kafka-2:19093
+      KAFKA_CFG_LOG_DIRS: /bitnami/kafka/data
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_CFG_NUM_PARTITIONS: 3
+      KAFKA_CFG_MIN_INSYNC_REPLICAS: 2
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_CFG_CLUSTER_ID: 'kafka-cluster-123'
+      KAFKA_KRAFT_CLUSTER_ID: 'kafka-cluster-123'
+      KAFKA_CFG_INITIAL_BROKER_REGISTRATION_TIMEOUT_MS: '60000'
+    ports:
+      - '9093:9092'
+      - '19093:19092'
+    volumes:
+      - kafka2_data:/bitnami/kafka
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'kafka-broker-api-versions.sh',
+          '--bootstrap-server',
+          'localhost:9092',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app_network
+
+  # Kafka topic init ---------
+  topic-init:
+    image: bitnami/kafka:3.7
+    container_name: topic-init
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+    environment:
+      BOOTSTRAP: 'kafka-1:19092,kafka-2:19092'
+      TOPIC_NAME: todo_created
+      TOPIC_PARTITIONS: 3
+      TOPIC_RF: 2
+    entrypoint: ['/bin/bash', '/init/topic-init.sh']
+    volumes:
+      - ./init:/init
+    networks:
+      - app_network
+
+  # Web UI for topics/consumers (http://localhost:8085)
+  akhq:
+    image: tchiotludo/akhq:0.25.1
+    container_name: akhq
+    ports:
+      - '8085:8080'
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            local:
+              properties:
+                bootstrap.servers: "kafka-1:19092,kafka-2:19092"
+              topic:
+                creation:
+                  enabled: false
+    depends_on:
+      - kafka-1
+      - kafka-2
+    networks:
+      - app_network
+
   # PostgreSQL database service -------
   postgres:
     image: postgres:16-alpine
@@ -10,7 +140,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -49,10 +179,30 @@ services:
       DB_USER: admin
       DB_PASSWORD: password
       DB_NAME: postgres
+      BOOTSTRAP_SERVERS: 'kafka-1:19092,kafka-2:19092'
+      TOPIC_NAME: '${TOPIC_TODO}'
     ports:
       - '8000:8000'
     depends_on:
       - postgres
+      - topic-init
+    networks:
+      - app_network
+
+  # Email Service ---------------
+  email:
+    build:
+      context: ./email-service
+      dockerfile: Dockerfile
+    container_name: email-service
+    environment:
+      BOOTSTRAP_SERVERS: 'kafka-1:19092,kafka-2:19092'
+      TOPIC_NAME: todo_created
+      GROUP_ID: email-service-group
+    ports:
+      - '7000:7000'
+    depends_on:
+      - go-backend
     networks:
       - app_network
 
@@ -74,8 +224,24 @@ services:
     networks:
       - app_network
 
+  # Nginx service ----------
+  nginx:
+    image: nginx:alpine
+    ports:
+      - '8080:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - node-backend
+      - go-backend
+    networks:
+      - app_network
+
 volumes:
   postgres_data:
+  kafka1_data:
+  kafka2_data:
 
 networks:
   app_network:

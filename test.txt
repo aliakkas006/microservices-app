@@ -3,3 +3,57 @@
            ALTER USER <admin> WITH SUPERUSER;  -- Optional
 
         3. psql -U <username> -d <database_name> -h <localhost>
+
+        4. docker exec -it postgres psql -U admin -d postgres [using docker]
+
+
+        Create a init.sql file to create required tables:
+**
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL
+);
+
+**
+CREATE TABLE IF NOT EXISTS todos (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    completed BOOLEAN DEFAULT FALSE
+);
+
+
+# In terminal 1: Produce messages:
+sudo docker exec -it kafka-1 bash -c "while true; do echo \$(date) | kafka-console-producer.sh --broker-list kafka-1:19092 --topic todo_created; sleep 1; done"
+
+# In terminal 2: Start consumer:
+sudo docker exec -it kafka-1 kafka-console-consumer.sh \
+  --bootstrap-server kafka-1:19092 \
+  --topic todo_created \
+  --from-beginning
+
+
+# Produce a Test Message:
+  sudo docker exec kafka-1 bash -c \
+  "echo 'key:{\"id\":1,\"title\":\"Test\",\"description\":\"Test\",\"completed\":false,\"userEmail\":\"test@example.com\"}' | \
+  kafka-console-producer.sh \
+  --bootstrap-server kafka-1:19092 \
+  --topic todo_created \
+  --property parse.key=true \
+  --property key.separator=:"
+
+# Verify Message in topic:
+    sudo docker exec kafka-1 kafka-console-consumer.sh \
+  --bootstrap-server kafka-1:19092 \
+  --topic todo_created \
+  --from-beginning \
+  --property print.key=true \
+  --property key.separator=":"
+
+
+
+
+
+
+

@@ -9,9 +9,23 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
+	"github.com/aliakkas006/backend-go/controllers"
+	"github.com/aliakkas006/backend-go/kafka"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: No .env file found")
+	}
+
+	brokers := os.Getenv("BOOTSTRAP_SERVERS")
+	topic := os.Getenv("TOPIC_NAME")
+
+	p := kafka.NewProducer(brokers, topic)
+	defer p.Close()
+	controllers.InitProducer(p)
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Warning: No .env file found")

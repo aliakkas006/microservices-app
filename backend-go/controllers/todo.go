@@ -2,13 +2,22 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/aliakkas006/backend-go/db"
+	"github.com/aliakkas006/backend-go/kafka"
 	"github.com/aliakkas006/backend-go/models"
 	"github.com/gin-gonic/gin"
 )
+
+var producer *kafka.Producer
+
+func InitProducer(p *kafka.Producer) {
+	producer = p
+}
 
 // GET /api/todos
 func GetTodos(c *gin.Context) {
@@ -76,6 +85,22 @@ func CreateTodo(c *gin.Context) {
 	t.Completed = false
 
 	c.JSON(http.StatusCreated, t)
+
+	// Produce Kafka event
+	go func(todo models.Todo) {
+		ctx := context.Background()
+		data, err := json.Marshal(todo)
+		if err != nil {
+			log.Printf("Failed to marshal todo: %v", err)
+			return
+		}
+
+		if err := producer.Send(ctx, []byte(todo.Title), data); err != nil {
+			log.Printf("Failed to produce todo event: %v", err)
+		} else {
+			log.Printf("✅ Produced todo event: id=%d title=%s", todo.ID, todo.Title)
+		}
+	}(t)
 }
 
 // PUT /api/todos/:id
