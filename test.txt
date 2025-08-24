@@ -34,7 +34,7 @@ sudo docker exec -it kafka-1 kafka-console-consumer.sh \
   --from-beginning
 
 
-# Produce a Test Message:
+# Produce a Test Message***:
   sudo docker exec kafka-1 bash -c \
   "echo 'key:{\"id\":1,\"title\":\"Test\",\"description\":\"Test\",\"completed\":false,\"userEmail\":\"test@example.com\"}' | \
   kafka-console-producer.sh \
