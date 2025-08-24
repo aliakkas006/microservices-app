@@ -20,6 +20,6 @@ func SendEmail(todo models.Todo) error {
 	time.Sleep(1 * time.Second)
 
 	// Print log instead of real email
-	log.Printf("📨 Email sent to %s for Todo: %s - %s", email, todo.Title, todo.Description)
+	log.Printf("📨 Email sent to the %s for Todo: %s - %s", email, todo.Title, todo.Description)
 	return nil
 }
