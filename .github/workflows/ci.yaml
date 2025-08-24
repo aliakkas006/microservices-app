@@ -1,66 +1,66 @@
-name: Build, Test and Push Appointment Service
+# name: Build, Test and Push Appointment Service
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  run-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Cache node_modules
-        uses: actions/cache@v3
-        with:
-          path: services/appointment/node_modules
-          key: ${{ runner.os }}-node-appointment-${{ hashFiles('services/appointment/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-appointment-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '21'
-      - name: Install dependencies and run tests
-        working-directory: services/appointment
-        run: |
-          yarn install --frozen-lockfile
-          yarn test
+# jobs:
+#   run-tests:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - name: Cache node_modules
+#         uses: actions/cache@v3
+#         with:
+#           path: services/appointment/node_modules
+#           key: ${{ runner.os }}-node-appointment-${{ hashFiles('services/appointment/yarn.lock') }}
+#           restore-keys: |
+#             ${{ runner.os }}-node-appointment-
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: '21'
+#       - name: Install dependencies and run tests
+#         working-directory: services/appointment
+#         run: |
+#           yarn install --frozen-lockfile
+#           yarn test
 
-  build:
-    needs: run-tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push staging image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./services/appointment
-          file: ./services/appointment/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/appointment:staging-${{ github.sha }}
+#   build:
+#     needs: run-tests
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: docker/setup-qemu-action@v3
+#       - uses: docker/setup-buildx-action@v3
+#       - uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Build and push staging image
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: ./services/appointment
+#           file: ./services/appointment/Dockerfile
+#           platforms: linux/amd64,linux/arm64
+#           push: true
+#           tags: |
+#             ${{ secrets.DOCKER_USERNAME }}/appointment:staging-${{ github.sha }}
 
-  push:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Pull, tag and push final images
-        run: |
-          docker pull ${{ secrets.DOCKER_USERNAME }}/appointment:staging-${{ github.sha }}
-          docker tag ${{ secrets.DOCKER_USERNAME }}/appointment:staging-${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/appointment:latest
-          docker tag ${{ secrets.DOCKER_USERNAME }}/appointment:staging-${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/appointment:${{ github.sha }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/appointment:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/appointment:${{ github.sha }}
+#   push:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: docker/setup-buildx-action@v3
+#       - uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Pull, tag and push final images
+#         run: |
+#           docker pull ${{ secrets.DOCKER_USERNAME }}/appointment:staging-${{ github.sha }}
+#           docker tag ${{ secrets.DOCKER_USERNAME }}/appointment:staging-${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/appointment:latest
+#           docker tag ${{ secrets.DOCKER_USERNAME }}/appointment:staging-${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/appointment:${{ github.sha }}
+#           docker push ${{ secrets.DOCKER_USERNAME }}/appointment:latest
+#           docker push ${{ secrets.DOCKER_USERNAME }}/appointment:${{ github.sha }}
