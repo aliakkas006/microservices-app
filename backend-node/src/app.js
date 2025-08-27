@@ -10,9 +10,9 @@ app.use(express.json());
 // API routes
 app.use('/api/users', userRoutes);
 
-// Basic health check endpoint
-app.get('/', (req, res) => {
-  res.send('Node.js Backend Service is running');
+// Add a simple health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'UP' });
 });
 
 module.exports = app;

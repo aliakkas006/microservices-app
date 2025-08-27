@@ -46,6 +46,11 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	// Add a simple health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "UP"})
+	})
+
 	routes.RegisterTodoRoutes(r)
 
 	port := os.Getenv("PORT")

@@ -62,4 +62,9 @@ func main() {
 	if err != nil && ctx.Err() == nil {
 		log.Fatalf("Consumer error: %v", err)
 	}
+
+	// Check if context was cancelled
+	if ctx.Err() != nil {
+		log.Println("Email service stopped.")
+	}
 }

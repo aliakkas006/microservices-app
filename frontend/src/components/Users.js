@@ -14,7 +14,6 @@ export default function Users() {
     setLoading(true);
     try {
       const res = await fetchUsers();
-      console.log(res);
       setUsers(res.data);
     } catch (err) {
       alert('Failed to load users');
@@ -28,7 +27,7 @@ export default function Users() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email) {
-      alert('Name and Email required');
+      alert('Name and Email are required!');
       return;
     }
     try {
