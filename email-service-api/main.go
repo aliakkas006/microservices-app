@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/aliakkas006/email-service/email"
-	"github.com/aliakkas006/email-service/kafka"
-	"github.com/aliakkas006/email-service/models"
+	"github.com/aliakkas006/email-service-api/email"
+	"github.com/aliakkas006/email-service-api/kafka"
+	"github.com/aliakkas006/email-service-api/models"
 	"github.com/joho/godotenv"
 )
 

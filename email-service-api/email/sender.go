@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/aliakkas006/email-service/models"
+	"github.com/aliakkas006/email-service-api/models"
 )
 
 // SendEmail simulates sending an email

@@ -1,18 +1,18 @@
 # Node backend
-/backend-node/node_modules
-/backend-node/dist
-/backend-node/.env
-/backend-node/npm-debug.log
-/backend-node/yarn-error.log
+/user-api/node_modules
+/user-api/dist
+/user-api/.env
+/user-api/npm-debug.log
+/user-api/yarn-error.log
 
 # Go backend
-/backend-go/bin
-/backend-go/pkg
-/backend-go/vendor
-/backend-go/.env
-/backend-go/*.exe
-/backend-go/*.log
-/backend-go/*.out
+/todo-api/bin
+/todo-api/pkg
+/todo-api/vendor
+/todo-api/.env
+/todo-api/*.exe
+/todo-api/*.log
+/todo-api/*.out
 
 # React frontend
 /frontend/node_modules

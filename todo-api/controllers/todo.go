@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/aliakkas006/backend-go/db"
-	"github.com/aliakkas006/backend-go/kafka"
-	"github.com/aliakkas006/backend-go/models"
+	"github.com/aliakkas006/todo-api/db"
+	"github.com/aliakkas006/todo-api/kafka"
+	"github.com/aliakkas006/todo-api/models"
 	"github.com/gin-gonic/gin"
 )
 

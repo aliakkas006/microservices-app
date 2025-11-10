@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/aliakkas006/email-service/models"
+	"github.com/aliakkas006/email-service-api/models"
 )
 
 func TestDummyTodoList(t *testing.T) {

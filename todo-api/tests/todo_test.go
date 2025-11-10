@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/aliakkas006/backend-go/models"
+	"github.com/aliakkas006/todo-api/models"
 )
 
 func TestDummyTodoList(t *testing.T) {

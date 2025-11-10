@@ -1,4 +1,4 @@
-module github.com/aliakkas006/email-service
+module github.com/aliakkas006/email-service-api
 
 go 1.24.5
 

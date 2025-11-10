@@ -1,4 +1,4 @@
-module github.com/aliakkas006/backend-go
+module github.com/aliakkas006/todo-api
 
 go 1.24.5
 

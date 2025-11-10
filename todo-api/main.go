@@ -4,14 +4,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/aliakkas006/backend-go/db"
-	"github.com/aliakkas006/backend-go/routes"
+	"github.com/aliakkas006/todo-api/db"
+	"github.com/aliakkas006/todo-api/routes"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
-	"github.com/aliakkas006/backend-go/controllers"
-	"github.com/aliakkas006/backend-go/kafka"
+	"github.com/aliakkas006/todo-api/controllers"
+	"github.com/aliakkas006/todo-api/kafka"
 )
 
 func main() {

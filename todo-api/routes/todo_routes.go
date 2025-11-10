@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/aliakkas006/backend-go/controllers"
+	"github.com/aliakkas006/todo-api/controllers"
 	"github.com/gin-gonic/gin"
 )
 
