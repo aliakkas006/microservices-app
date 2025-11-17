@@ -12,6 +12,8 @@ import (
 	"github.com/aliakkas006/email-service-api/kafka"
 	"github.com/aliakkas006/email-service-api/models"
 	"github.com/joho/godotenv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -67,4 +69,16 @@ func main() {
 	if ctx.Err() != nil {
 		log.Println("Email service stopped.")
 	}
+
+	// Get all the emails
+	// GET /api/emails
+	r.GET("/api/emails", func(c *gin.Context) {
+		emails, err := email.GetAllEmails()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to retrieve emails"})
+			return
+		}
+		c.JSON(200, emails)
+	})	
+
 }

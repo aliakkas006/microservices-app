@@ -48,7 +48,7 @@ func main() {
 
 	// Add a simple health check endpoint
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "UP"})
+		c.JSON(200, gin.H{"status": "Todo Service is UP"})
 	})
 
 	routes.RegisterTodoRoutes(r)
