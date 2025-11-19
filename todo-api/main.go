@@ -47,7 +47,7 @@ func main() {
 	}))
 
 	// Add a simple health check endpoint
-	r.GET("/todo/health", func(c *gin.Context) {
+	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "UP"})
 	})
 

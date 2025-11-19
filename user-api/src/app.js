@@ -11,7 +11,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 
 // Add a simple health check endpoint
-app.get('/user/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).json({ status: 'User service is UP' });
 });
 
