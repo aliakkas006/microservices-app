@@ -114,48 +114,29 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  update_manifest:
-    name: Update Kubernetes Manifests with New Image Tag
-    needs: build_and_push
-    if: ${{ fromJSON(needs.detect_changes.outputs.changes) != '[]' }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
       - name: Update Image Tags
         run: |
           TAG=${{ github.sha }}
           echo "Updating manifests with tag: $TAG"
 
-          # Loop through changed services
-          for svc in ${{ join(fromJSON(needs.detect_changes.outputs.changes), ' ') }}; do
+          SERVICES='${{ needs.detect_changes.outputs.changes }}'
+          echo "Detected services: $SERVICES"
+
+          # If no changes, skip safely
+          if [ "$SERVICES" = "[]" ] || [ -z "$SERVICES" ]; then
+            echo "No changed services found. Skipping update."
+            exit 0
+          fi
+
+          # Loop through each changed service using jq (safe JSON parsing)
+          echo "$SERVICES" | jq -r '.[]' | while read -r svc; do
             FILE="$svc/${svc}-deployment.yaml"
 
             if [ -f "$FILE" ]; then
               echo "Updating file: $FILE"
-
               sed -i "s|\(image:.*${svc}:\).*|\1$TAG|g" "$FILE"
             else
               echo "Manifest not found for $svc (skipping)"
             fi
           done
 
-      - name: Commit & Push Changes
-        run: |
-          git add . 
-          if git diff-index --quiet HEAD; then
-            echo "No manifest changes to commit"
-            exit 0
-          fi
-
-          git commit -m "Update manifests with image tag: ${{ github.sha }}"
-          git push origin main
