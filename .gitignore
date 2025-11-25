@@ -2,6 +2,7 @@
 /user-api/node_modules
 /user-api/dist
 /user-api/.env
+email-service/.env
 /user-api/npm-debug.log
 /user-api/yarn-error.log
 

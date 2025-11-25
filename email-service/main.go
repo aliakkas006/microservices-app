@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/aliakkas006/email-service-api/email"
-	"github.com/aliakkas006/email-service-api/kafka"
-	"github.com/aliakkas006/email-service-api/models"
+	"github.com/aliakkas006/email-service/email"
+	"github.com/aliakkas006/email-service/kafka"
+	"github.com/aliakkas006/email-service/models"
 	"github.com/joho/godotenv"
 
 	"github.com/gin-gonic/gin"
@@ -70,6 +70,9 @@ func main() {
 		log.Println("Email service stopped.")
 	}
 
+	// Initialize Gin router
+	r := gin.Default()
+
 	// Get all the emails
 	// GET /api/emails
 	r.GET("/api/emails", func(c *gin.Context) {
@@ -79,6 +82,11 @@ func main() {
 			return
 		}
 		c.JSON(200, emails)
-	})	
+	})
+
+	// Start server
+	if err := r.Run(":7000"); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 
 }

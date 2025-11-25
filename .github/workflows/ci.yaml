@@ -6,14 +6,14 @@ on:
     paths:
       - 'todo-api/**'
       - 'user-api/**'
-      - 'email-service-api/**'
+      - 'email-service/**'
       - 'frontend/**'
       - '.github/workflows/**'
   pull_request:
     paths:
       - 'todo-api/**'
       - 'user-api/**'
-      - 'email-service-api/**'
+      - 'email-service/**'
       - 'frontend/**'
 
 jobs:
@@ -35,8 +35,8 @@ jobs:
               - 'todo-api/**'
             user-api:
               - 'user-api/**'
-            email-service-api:
-              - 'email-service-api/**'
+            email-service:
+              - 'email-service/**'
             frontend:
               - 'frontend/**'
 
@@ -59,7 +59,7 @@ jobs:
           node-version: 18
 
       - name: Set up Go
-        if: ${{ matrix.service == 'todo-api' || matrix.service == 'email-service-api' }}
+        if: ${{ matrix.service == 'todo-api' || matrix.service == 'email-service' }}
         uses: actions/setup-go@v5
         with:
           go-version: '1.24.5'
@@ -74,7 +74,7 @@ jobs:
 
       # Run tests for Go service
       - name: Run Tests (Go)
-        if: ${{ matrix.service == 'todo-api' || matrix.service == 'email-service-api' }}
+        if: ${{ matrix.service == 'todo-api' || matrix.service == 'email-service' }}
         working-directory: ./${{ matrix.service }}
         run: go test ./...
 
@@ -139,4 +139,3 @@ jobs:
               echo "Manifest not found for $svc (skipping)"
             fi
           done
-
